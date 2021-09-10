@@ -31,17 +31,20 @@ namespace NukedOpl.Test
             };
 
             var size = ImfPlayer.Generate(source, state, buffer);
+            Dsp.Normalize(buffer.AsSpan(0, size));
 
-            using var output = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "out.wav"));
+            using var output = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{resourceName}.wav"));
             Riff.WriteWav16(output, buffer.AsSpan(0, size), Opl3.OPL_RATE, 2);
             output.Flush();
         }
         
         [Test]
+        [TestCase("fanfare.imf", 280)]
+        [TestCase("darkhall.wlf", 700)]
         [Explicit]
-        public void ImfTest()
+        public void ImfTest(string name, int rate)
         {
-            RenderImf("fanfare.imf", 280);
+            RenderImf(name, rate);
         }
     }
 }

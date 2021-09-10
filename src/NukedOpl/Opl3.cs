@@ -203,12 +203,12 @@ namespace NukedOpl
 
         private delegate short EnvelopeSinFunc(ushort phase, ushort envelope);
 
-        private static short OPL3_EnvelopeCalcExp(uint level)
+        private static short OPL3_EnvelopeCalcExp(int level)
         {
-            if (level > 0x1FFF)
+            if (level is > 0x1FFF or < 0)
                 level = 0x1FFF;
 
-            return unchecked((short) ((exprom[level & 0xFF] << 1) >> (int) (level >> 8)));
+            return unchecked((short) ((exprom[level & 0xFF] << 1) >> (level >> 8)));
         }
 
         private static short OPL3_EnvelopeCalcSin0(ushort phase, ushort envelope)
@@ -225,7 +225,7 @@ namespace NukedOpl
                 ? logsinrom[(phase & 0xff) ^ 0xff] 
                 : logsinrom[phase & 0xff];
 
-            return unchecked((short) (OPL3_EnvelopeCalcExp(unchecked((uint) (out_ + (envelope << 3)))) ^ neg));
+            return unchecked((short) (OPL3_EnvelopeCalcExp(out_ + (envelope << 3)) ^ neg));
         }
 
         private static short OPL3_EnvelopeCalcSin1(ushort phase, ushort envelope)
@@ -245,7 +245,7 @@ namespace NukedOpl
                 out_ = logsinrom[phase & 0xff];
             }
 
-            return OPL3_EnvelopeCalcExp(unchecked((uint) (out_ + (envelope << 3))));
+            return OPL3_EnvelopeCalcExp(out_ + (envelope << 3));
         }
 
         private static short OPL3_EnvelopeCalcSin2(ushort phase, ushort envelope)
@@ -261,7 +261,7 @@ namespace NukedOpl
                 out_ = logsinrom[phase & 0xff];
             }
 
-            return OPL3_EnvelopeCalcExp(unchecked((uint) (out_ + (envelope << 3))));
+            return OPL3_EnvelopeCalcExp(out_ + (envelope << 3));
         }
 
         private static short OPL3_EnvelopeCalcSin3(ushort phase, ushort envelope)
@@ -277,7 +277,7 @@ namespace NukedOpl
                 out_ = logsinrom[phase & 0xff];
             }
 
-            return OPL3_EnvelopeCalcExp(unchecked((uint) (out_ + (envelope << 3))));
+            return OPL3_EnvelopeCalcExp(out_ + (envelope << 3));
         }
 
         private static short OPL3_EnvelopeCalcSin4(ushort phase, ushort envelope)
@@ -303,7 +303,7 @@ namespace NukedOpl
                 out_ = logsinrom[(phase << 1) & 0xff];
             }
 
-            return unchecked((short) (OPL3_EnvelopeCalcExp(unchecked((uint) (out_ + (envelope << 3)))) ^ neg));
+            return unchecked((short) (OPL3_EnvelopeCalcExp(out_ + (envelope << 3)) ^ neg));
         }
 
         private static short OPL3_EnvelopeCalcSin5(ushort phase, ushort envelope)
@@ -323,7 +323,7 @@ namespace NukedOpl
                 out_ = logsinrom[(phase << 1) & 0xff];
             }
 
-            return OPL3_EnvelopeCalcExp(unchecked((uint) (out_ + (envelope << 3))));
+            return OPL3_EnvelopeCalcExp(out_ + (envelope << 3));
         }
 
         private static short OPL3_EnvelopeCalcSin6(ushort phase, ushort envelope)
@@ -335,7 +335,7 @@ namespace NukedOpl
                 neg = 0xffff;
             }
 
-            return unchecked((short) (OPL3_EnvelopeCalcExp(unchecked((uint) (envelope << 3))) ^ neg));
+            return unchecked((short) (OPL3_EnvelopeCalcExp(envelope << 3) ^ neg));
         }
 
         private static short OPL3_EnvelopeCalcSin7(ushort phase, ushort envelope)
@@ -349,7 +349,7 @@ namespace NukedOpl
             }
 
             var out_ = unchecked((ushort) (phase << 3));
-            return unchecked((short) (OPL3_EnvelopeCalcExp(unchecked((uint) (out_ + (envelope << 3)))) ^ neg));
+            return unchecked((short) (OPL3_EnvelopeCalcExp(out_ + (envelope << 3)) ^ neg));
         }
 
         private static readonly EnvelopeSinFunc[] envelope_sin =
