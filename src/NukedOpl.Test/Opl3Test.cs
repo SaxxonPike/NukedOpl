@@ -9,7 +9,7 @@ namespace NukedOpl.Test
     {
         private void RenderImf(string resourceName, int ticksPerSecond)
         {
-            var opl = new Opl3(TestContext.Out);
+            var opl = new Opl3();
             var chip = new Opl3Chip();
             opl.Reset(chip, 44100);
 

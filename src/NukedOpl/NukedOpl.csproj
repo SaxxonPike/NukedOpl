@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net5.0</TargetFrameworks>
+    <TargetFramework>net5.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>NukedOpl</PackageId>
+    <Version>1.8.0</Version>
+    <Authors>SaxxonPike, Nuke.YKT</Authors>
+    <PackageLicenseExpression>LGPL-2.1-or-later</PackageLicenseExpression>
   </PropertyGroup>
 </Project>
