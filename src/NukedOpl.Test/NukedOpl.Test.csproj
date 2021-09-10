@@ -16,5 +16,7 @@
     <EmbeddedResource Include="Data\fanfare.imf" />
     <None Remove="Data\darkhall.wlf" />
     <EmbeddedResource Include="Data\darkhall.wlf" />
+    <None Remove="Data\drshock.imf" />
+    <EmbeddedResource Include="Data\drshock.imf" />
   </ItemGroup>
 </Project>

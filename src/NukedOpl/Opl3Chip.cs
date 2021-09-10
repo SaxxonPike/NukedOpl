@@ -55,21 +55,21 @@ namespace NukedOpl
 
         public Opl3Channel[] channel { get; } = new Opl3Channel[18];
         public Opl3Slot[] slot { get; } = new Opl3Slot[36];
-        public ushort timer { get; set; }
+        public int timer { get; set; }
         public ulong eg_timer { get; set; }
-        public byte eg_timerrem { get; set; }
-        public byte eg_state { get; set; }
-        public byte eg_add { get; set; }
-        public byte newm { get; set; }
-        public byte nts { get; set; }
-        public byte rhy { get; set; }
-        public byte vibpos { get; set; }
-        public byte vibshift { get; set; }
-        public short[] tremolo { get; set; }
-        public byte tremolopos { get; set; }
-        public byte tremoloshift { get; set; }
-        public uint noise { get; set; }
-        public short[] zeromod { get; set; }
+        public bool eg_timerrem { get; set; }
+        public bool eg_state { get; set; }
+        public int eg_add { get; set; }
+        public bool newm { get; set; }
+        public int nts { get; set; }
+        public int rhy { get; set; }
+        public int vibpos { get; set; }
+        public int vibshift { get; set; }
+        public int[] tremolo { get; set; }
+        public int tremolopos { get; set; }
+        public int tremoloshift { get; set; }
+        public int noise { get; set; }
+        public int[] zeromod { get; set; }
         public int[] mixbuff { get; } = new int[2];
         public bool rm_hh_bit2 { get; set; }
         public bool rm_hh_bit3 { get; set; }
@@ -77,7 +77,7 @@ namespace NukedOpl
         public bool rm_hh_bit8 { get; set; }
         public bool rm_tc_bit3 { get; set; }
         public bool rm_tc_bit5 { get; set; }
-        public byte stereoext { get; set; }
+        public bool stereoext { get; set; }
 
         /* OPL3L */
         public int rateratio { get; set; }
@@ -107,11 +107,11 @@ namespace NukedOpl
             rhy = default;
             vibpos = default;
             vibshift = default;
-            tremolo = new short[1];
+            tremolo = new int[1];
             tremolopos = default;
             tremoloshift = default;
             noise = default;
-            zeromod = new short[1];
+            zeromod = new int[1];
             for (var i = 0; i < mixbuff.Length; i++)
                 mixbuff[i] = default;
             rm_hh_bit2 = default;

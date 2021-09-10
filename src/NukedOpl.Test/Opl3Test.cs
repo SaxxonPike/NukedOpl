@@ -41,6 +41,7 @@ namespace NukedOpl.Test
         [Test]
         [TestCase("fanfare.imf", 280)]
         [TestCase("darkhall.wlf", 700)]
+        [TestCase("drshock.imf", 560)]
         [Explicit]
         public void ImfTest(string name, int rate)
         {
