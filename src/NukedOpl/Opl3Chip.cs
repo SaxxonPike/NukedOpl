@@ -39,7 +39,7 @@
 
 namespace NukedOpl
 {
-    public class Opl3Chip
+    public sealed class Opl3Chip
     {
         public const int OPL_WRITEBUF_SIZE = 1024;
 

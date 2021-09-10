@@ -39,7 +39,7 @@
 
 namespace NukedOpl
 {
-    public class Opl3Channel
+    public sealed class Opl3Channel
     {
         public Opl3Channel(Opl3Chip chip) => this.chip = chip;
 

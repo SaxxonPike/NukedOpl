@@ -39,7 +39,7 @@
 
 namespace NukedOpl
 {
-    public class Opl3Writebuf
+    public sealed class Opl3Writebuf
     {
         public ulong time { get; set; }
         public ushort reg { get; set; }
