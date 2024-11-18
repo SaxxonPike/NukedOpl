@@ -1130,7 +1130,6 @@ public sealed class Opl3 : IOpl3
 
         chip.timer = (chip.timer + 1) & 0xFFFF;
 
-        chip.eg_add = 0;
         if (chip.eg_state)
         {
             while (shift < 13 && ((chip.eg_timer >> shift) & 1) == 0)
