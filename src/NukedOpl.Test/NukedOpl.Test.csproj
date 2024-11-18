@@ -1,22 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NukedOpl\NukedOpl.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="6.1.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-    <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Data\fanfare.imf" />
-    <EmbeddedResource Include="Data\fanfare.imf" />
-    <None Remove="Data\darkhall.wlf" />
-    <EmbeddedResource Include="Data\darkhall.wlf" />
-    <None Remove="Data\drshock.imf" />
-    <EmbeddedResource Include="Data\drshock.imf" />
-  </ItemGroup>
+    <PropertyGroup>
+        <LangVersion>12</LangVersion>
+        <TargetFrameworks>net462;net8.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\NukedOpl\NukedOpl.csproj"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net462' ">
+        <!-- required to backport .NET Core features -->
+        <PackageReference Include="System.Memory" Version="4.6.0"/>
+        <PackageReference Include="IsExternalInit" Version="1.0.3"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="FluentAssertions" Version="6.1.0"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0"/>
+        <PackageReference Include="NUnit" Version="3.13.2"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.0.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="Data\**\*"/>
+        <EmbeddedResource Include="Data\**\*"/>
+    </ItemGroup>
 </Project>

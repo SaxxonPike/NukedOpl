@@ -1,10 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>NukedOpl</PackageId>
-    <Version>1.8.0</Version>
-    <Authors>SaxxonPike, Nuke.YKT</Authors>
-    <PackageLicenseExpression>LGPL-2.1-or-later</PackageLicenseExpression>
-  </PropertyGroup>
+    <PropertyGroup>
+        <LangVersion>12</LangVersion>
+        <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>NukedOpl</PackageId>
+        <Version>1.8.1</Version>
+        <Authors>SaxxonPike, Nuke.YKT</Authors>
+        <PackageLicenseExpression>LGPL-2.1-or-later</PackageLicenseExpression>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' ">
+        <!-- required to backport .NET Core features -->
+        <PackageReference Include="System.Memory" Version="4.6.0"/>
+    </ItemGroup>
 </Project>

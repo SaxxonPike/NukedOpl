@@ -32,57 +32,63 @@
 
 /*
  * .NET conversion written by Anthony Konzel.
- * 
+ *
  * Github: saxxonpike
  * Email: saxxonpike@gmail.com
  */
 
-namespace NukedOpl
+namespace NukedOpl;
+
+public sealed class Opl3Channel
 {
-    public sealed class Opl3Channel
+    public Opl3Channel(Opl3Chip chip) => this.chip = chip;
+
+    // The name is "slotz" presumably due to a naming conflict with Qt in the
+    // upstream code.
+
+    public Opl3Slot[] slotz { get; } = [null, null];
+    public Opl3Channel pair { get; set; }
+    public Opl3Chip chip { get; }
+
+    public int[][] out_ { get; } = [new int[1], new int[1], new int[1], new int[1]];
+
+    public int leftpan { get; set; }
+    public int rightpan { get; set; }
+    public int chtype { get; set; }
+    public int f_num { get; set; }
+    public int block { get; set; }
+    public int fb { get; set; }
+    public int con { get; set; }
+    public int alg { get; set; }
+    public int ksv { get; set; }
+    public int cha { get; set; }
+    public int chb { get; set; }
+    public int chc { get; set; }
+    public int chd { get; set; }
+    public int ch_num { get; set; }
+
+    public void Reset()
     {
-        public Opl3Channel(Opl3Chip chip) => this.chip = chip;
-
-        public Opl3Slot[] slots { get; } = {null, null};
-        public Opl3Channel pair { get; set; }
-        public Opl3Chip chip { get; }
-
-        public int[][] out_ { get; } = {new int[1], new int[1], new int[1], new int[1]};
-
-        public int leftpan { get; set; }
-        public int rightpan { get; set; }
-        public int chtype { get; set; }
-        public int f_num { get; set; }
-        public int block { get; set; }
-        public int fb { get; set; }
-        public int con { get; set; }
-        public int alg { get; set; }
-        public int ksv { get; set; }
-        public int cha { get; set; }
-        public int chb { get; set; }
-        public int ch_num { get; set; }
-
-        public void Reset()
-        {
-            slots[0] = null;
-            slots[1] = null;
-            pair = null;
-            out_[0] = new int[1];
-            out_[1] = new int[1];
-            out_[2] = new int[1];
-            out_[3] = new int[1];
-            leftpan = default;
-            rightpan = default;
-            chtype = default;
-            f_num = default;
-            block = default;
-            fb = default;
-            con = default;
-            alg = default;
-            ksv = default;
-            cha = default;
-            chb = default;
-            ch_num = default;
-        }
+        slotz[0] = null;
+        slotz[1] = null;
+        pair = null;
+        out_[0] = new int[1];
+        out_[1] = new int[1];
+        out_[2] = new int[1];
+        out_[3] = new int[1];
+        leftpan = default;
+        rightpan = default;
+        chtype = default;
+        f_num = default;
+        block = default;
+        fb = default;
+        con = default;
+        alg = default;
+        ksv = default;
+        cha = default;
+        chb = default;
+        chc = default;
+        chd = default;
+        ch_num = default;
     }
 }
