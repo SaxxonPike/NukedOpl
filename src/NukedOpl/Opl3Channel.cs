@@ -43,11 +43,11 @@ public sealed class Opl3Channel
 {
     public Opl3Channel(Opl3Chip chip) => this.chip = chip;
 
-    public Opl3Slot[] slots { get; } = {null, null};
+    public Opl3Slot[] slots { get; } = [null, null];
     public Opl3Channel pair { get; set; }
     public Opl3Chip chip { get; }
 
-    public int[][] out_ { get; } = {new int[1], new int[1], new int[1], new int[1]};
+    public int[][] out_ { get; } = [new int[1], new int[1], new int[1], new int[1]];
 
     public int leftpan { get; set; }
     public int rightpan { get; set; }

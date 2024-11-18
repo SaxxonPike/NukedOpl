@@ -32,10 +32,12 @@
 
 /*
  * .NET conversion written by Anthony Konzel.
- * 
+ *
  * Github: saxxonpike
  * Email: saxxonpike@gmail.com
  */
+
+// ReSharper disable InconsistentNaming
 
 using System;
 using System.IO;
@@ -74,10 +76,10 @@ public sealed class Opl3 : IOpl3
 
     /* logsin table */
 
-    private static int OPL_SIN(int x) => (int) (Math.Sin(x * Math.PI / 512d) * 65536d);
+    private static int OPL_SIN(int x) => (int)(Math.Sin(x * Math.PI / 512d) * 65536d);
 
     private static readonly int[] logsinrom =
-    {
+    [
         0x859, 0x6c3, 0x607, 0x58b, 0x52e, 0x4e4, 0x4a6, 0x471,
         0x443, 0x41a, 0x3f5, 0x3d3, 0x3b5, 0x398, 0x37e, 0x365,
         0x34e, 0x339, 0x324, 0x311, 0x2ff, 0x2ed, 0x2dc, 0x2cd,
@@ -110,12 +112,12 @@ public sealed class Opl3 : IOpl3
         0x004, 0x004, 0x003, 0x003, 0x003, 0x002, 0x002, 0x002,
         0x002, 0x001, 0x001, 0x001, 0x001, 0x001, 0x001, 0x001,
         0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000
-    };
+    ];
 
     /* exp table */
 
     private static readonly int[] exprom =
-    {
+    [
         0x7fa, 0x7f5, 0x7ef, 0x7ea, 0x7e4, 0x7df, 0x7da, 0x7d4,
         0x7cf, 0x7c9, 0x7c4, 0x7bf, 0x7b9, 0x7b4, 0x7ae, 0x7a9,
         0x7a4, 0x79f, 0x799, 0x794, 0x78f, 0x78a, 0x784, 0x77f,
@@ -148,50 +150,50 @@ public sealed class Opl3 : IOpl3
         0x442, 0x43f, 0x43c, 0x439, 0x436, 0x433, 0x430, 0x42d,
         0x42a, 0x428, 0x425, 0x422, 0x41f, 0x41c, 0x419, 0x416,
         0x414, 0x411, 0x40e, 0x40b, 0x408, 0x406, 0x403, 0x400
-    };
+    ];
 
     /* freq mult table multiplied by 2
        1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 12, 15, 15 */
 
     private static readonly int[] mt =
-    {
+    [
         1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 20, 24, 24, 30, 30
-    };
+    ];
 
     /* ksl table */
 
     private static readonly int[] kslrom =
-    {
+    [
         0, 32, 40, 45, 48, 51, 53, 55, 56, 58, 59, 60, 61, 62, 63, 64
-    };
+    ];
 
     private static readonly int[] kslshift =
-    {
+    [
         8, 1, 2, 0
-    };
+    ];
 
     /* envelope generator constants */
 
     private static readonly int[][] eg_incstep =
-    {
-        new[] {0, 0, 0, 0},
-        new[] {1, 0, 0, 0},
-        new[] {1, 0, 1, 0},
-        new[] {1, 1, 1, 0},
-    };
+    [
+        [0, 0, 0, 0],
+        [1, 0, 0, 0],
+        [1, 0, 1, 0],
+        [1, 1, 1, 0]
+    ];
 
     /* address decoding */
 
     private static readonly int[] ad_slot =
-    {
+    [
         0, 1, 2, 3, 4, 5, -1, -1, 6, 7, 8, 9, 10, 11, -1, -1,
         12, 13, 14, 15, 16, 17, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-    };
+    ];
 
     private static readonly int[] ch_slot =
-    {
+    [
         0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26, 30, 31, 32
-    };
+    ];
 
     /* stereo extension panning table */
 
@@ -245,32 +247,22 @@ public sealed class Opl3 : IOpl3
 
     private static int OPL3_EnvelopeCalcSin2(int phase, int envelope)
     {
-        int out_;
         phase &= 0x3ff;
-        if ((phase & 0x100) != 0)
-        {
-            out_ = logsinrom[(phase & 0xff) ^ 0xff];
-        }
-        else
-        {
-            out_ = logsinrom[phase & 0xff];
-        }
+
+        var out_ = (phase & 0x100) != 0
+            ? logsinrom[(phase & 0xff) ^ 0xff]
+            : logsinrom[phase & 0xff];
 
         return OPL3_EnvelopeCalcExp(out_ + (envelope << 3));
     }
 
     private static int OPL3_EnvelopeCalcSin3(int phase, int envelope)
     {
-        int out_;
         phase &= 0x3ff;
-        if ((phase & 0x100) != 0)
-        {
-            out_ = 0x1000;
-        }
-        else
-        {
-            out_ = logsinrom[phase & 0xff];
-        }
+
+        var out_ = (phase & 0x100) != 0
+            ? 0x1000
+            : logsinrom[phase & 0xff];
 
         return OPL3_EnvelopeCalcExp(out_ + (envelope << 3));
     }
@@ -344,7 +336,7 @@ public sealed class Opl3 : IOpl3
     }
 
     private static readonly EnvelopeSinFunc[] envelope_sin =
-    {
+    [
         OPL3_EnvelopeCalcSin0,
         OPL3_EnvelopeCalcSin1,
         OPL3_EnvelopeCalcSin2,
@@ -353,7 +345,7 @@ public sealed class Opl3 : IOpl3
         OPL3_EnvelopeCalcSin5,
         OPL3_EnvelopeCalcSin6,
         OPL3_EnvelopeCalcSin7
-    };
+    ];
 
     private const int envelope_gen_num_attack = 0;
     private const int envelope_gen_num_decay = 1;
@@ -1071,7 +1063,7 @@ public sealed class Opl3 : IOpl3
         int accm;
         var shift = 0;
 
-        buf[1] = unchecked((short) OPL3_ClipSample(chip.mixbuff[1]));
+        buf[1] = unchecked((short)OPL3_ClipSample(chip.mixbuff[1]));
 
         for (var ii = 0; ii < 36; ii++)
             OPL3_ProcessSlot(chip.slot[ii]);
@@ -1087,7 +1079,7 @@ public sealed class Opl3 : IOpl3
 
         chip.mixbuff[0] = mix;
 
-        buf[0] = unchecked((short) OPL3_ClipSample(chip.mixbuff[0]));
+        buf[0] = unchecked((short)OPL3_ClipSample(chip.mixbuff[0]));
 
         mix = 0;
         for (var ii = 0; ii < 18; ii++)
@@ -1172,10 +1164,10 @@ public sealed class Opl3 : IOpl3
             chip.samplecnt -= chip.rateratio;
         }
 
-        buf[0] = (short) ((chip.oldsamples[0] * (chip.rateratio - chip.samplecnt)
-                           + chip.samples[0] * chip.samplecnt) / chip.rateratio);
-        buf[1] = (short) ((chip.oldsamples[1] * (chip.rateratio - chip.samplecnt)
-                           + chip.samples[1] * chip.samplecnt) / chip.rateratio);
+        buf[0] = (short)((chip.oldsamples[0] * (chip.rateratio - chip.samplecnt)
+                          + chip.samples[0] * chip.samplecnt) / chip.rateratio);
+        buf[1] = (short)((chip.oldsamples[1] * (chip.rateratio - chip.samplecnt)
+                          + chip.samples[1] * chip.samplecnt) / chip.rateratio);
         chip.samplecnt += 1 << RSM_FRAC;
 
         return 2;
