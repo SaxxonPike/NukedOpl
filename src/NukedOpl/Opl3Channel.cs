@@ -60,6 +60,8 @@ public sealed class Opl3Channel
     public int ksv { get; set; }
     public int cha { get; set; }
     public int chb { get; set; }
+    public int chc { get; set; }
+    public int chd { get; set; }
     public int ch_num { get; set; }
 
     public void Reset()
@@ -82,6 +84,8 @@ public sealed class Opl3Channel
         ksv = default;
         cha = default;
         chb = default;
+        chc = default;
+        chd = default;
         ch_num = default;
     }
 }

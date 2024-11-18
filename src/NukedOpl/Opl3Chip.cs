@@ -70,7 +70,7 @@ public sealed class Opl3Chip
     public int tremoloshift { get; set; }
     public int noise { get; set; }
     public int[] zeromod { get; set; }
-    public int[] mixbuff { get; } = new int[2];
+    public int[] mixbuff { get; } = new int[4];
     public bool rm_hh_bit2 { get; set; }
     public bool rm_hh_bit3 { get; set; }
     public bool rm_hh_bit7 { get; set; }
@@ -82,8 +82,8 @@ public sealed class Opl3Chip
     /* OPL3L */
     public int rateratio { get; set; }
     public int samplecnt { get; set; }
-    public short[] oldsamples { get; } = new short[2];
-    public short[] samples { get; } = new short[2];
+    public short[] oldsamples { get; } = new short[4];
+    public short[] samples { get; } = new short[4];
 
     public ulong writebuf_samplecnt { get; set; }
     public uint writebuf_cur { get; set; }

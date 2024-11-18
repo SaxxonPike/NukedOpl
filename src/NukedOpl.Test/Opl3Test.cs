@@ -33,7 +33,9 @@ public class Opl3Test
         var size = ImfPlayer.Generate(source, state, buffer);
         Dsp.Normalize(buffer.AsSpan(0, size));
 
-        using var output = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{resourceName}.wav"));
+        using var output = File.Open(
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{resourceName}.wav"),
+            FileMode.Create, FileAccess.Write);
         Riff.WriteWav16(output, buffer.AsSpan(0, size), Opl3.OPL_RATE, 2);
         output.Flush();
     }

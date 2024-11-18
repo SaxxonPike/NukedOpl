@@ -945,10 +945,14 @@ public sealed class Opl3 : IOpl3
         {
             channel.cha = (((data >> 4) & 0x01) != 0 ? ~0 : 0) & 0xFFFF;
             channel.chb = (((data >> 5) & 0x01) != 0 ? ~0 : 0) & 0xFFFF;
+            channel.chc = (((data >> 6) & 0x01) != 0 ? ~0 : 0) & 0xFFFF;
+            channel.chd = (((data >> 7) & 0x01) != 0 ? ~0 : 0) & 0xFFFF;
         }
         else
         {
             channel.cha = channel.chb = 0xFFFF;
+            // TODO: Verify on real chip if DAC2 output is disabled in compat mode
+            channel.chc = channel.chd = 0;
         }
 
         if (!channel.chip.stereoext)
@@ -1056,41 +1060,54 @@ public sealed class Opl3 : IOpl3
         OPL3_SlotGenerate(slot);
     }
 
-    private static int OPL3_Generate(Opl3Chip chip, Span<short> buf)
+    private static int OPL3_Generate4Ch(Opl3Chip chip, Span<short> buf4)
     {
         Opl3Channel channel;
         int[][] out_;
         int accm;
         var shift = 0;
 
-        buf[1] = unchecked((short)OPL3_ClipSample(chip.mixbuff[1]));
+        buf4[1] = unchecked((short)OPL3_ClipSample(chip.mixbuff[1]));
+        buf4[3] = unchecked((short)OPL3_ClipSample(chip.mixbuff[3]));
 
         for (var ii = 0; ii < 36; ii++)
             OPL3_ProcessSlot(chip.slot[ii]);
 
-        var mix = 0;
+        Span<int> mix = stackalloc int[2];
+        mix.Clear();
+
         for (var ii = 0; ii < 18; ii++)
         {
             channel = chip.channel[ii];
             out_ = channel.out_;
             accm = out_[0][0] + out_[1][0] + out_[2][0] + out_[3][0];
-            mix += (accm * channel.leftpan) >> 16;
+            mix[0] += unchecked((short)(chip.stereoext
+                ? (accm * channel.leftpan) >> 16
+                : accm & channel.cha));
+            mix[1] += unchecked((short)(accm & channel.chc));
         }
 
-        chip.mixbuff[0] = mix;
+        chip.mixbuff[0] = mix[0];
+        chip.mixbuff[2] = mix[1];
 
-        buf[0] = unchecked((short)OPL3_ClipSample(chip.mixbuff[0]));
+        buf4[0] = unchecked((short)OPL3_ClipSample(chip.mixbuff[0]));
+        buf4[2] = unchecked((short)OPL3_ClipSample(chip.mixbuff[0]));
 
-        mix = 0;
+        mix.Clear();
+
         for (var ii = 0; ii < 18; ii++)
         {
             channel = chip.channel[ii];
             out_ = channel.out_;
             accm = out_[0][0] + out_[1][0] + out_[2][0] + out_[3][0];
-            mix += (accm * channel.rightpan) >> 16;
+            mix[0] += unchecked((short)(chip.stereoext
+                ? (accm * channel.rightpan) >> 16
+                : accm & channel.chb));
+            mix[1] += unchecked((short)(accm & channel.chd));
         }
 
-        chip.mixbuff[1] = mix;
+        chip.mixbuff[1] = mix[0];
+        chip.mixbuff[3] = mix[1];
 
         if ((chip.timer & 0x3f) == 0x3f)
             chip.tremolopos = (chip.tremolopos + 1) % 210;
@@ -1151,16 +1168,25 @@ public sealed class Opl3 : IOpl3
 
         chip.writebuf_samplecnt++;
 
+        return 4;
+    }
+
+    private static int OPL3_Generate(Opl3Chip chip, Span<short> buf)
+    {
+        Span<short> samples = stackalloc short[4];
+        OPL3_Generate4Ch(chip, samples);
+        buf[0] = samples[0];
+        buf[1] = samples[1];
+
         return 2;
     }
 
-    private static int OPL3_GenerateResampled(Opl3Chip chip, Span<short> buf)
+    private static int OPL3_Generate4ChResampled(Opl3Chip chip, Span<short> buf)
     {
         while (chip.samplecnt >= chip.rateratio)
         {
-            chip.oldsamples[0] = chip.samples[0];
-            chip.oldsamples[1] = chip.samples[1];
-            OPL3_Generate(chip, chip.samples);
+            chip.samples.AsSpan().CopyTo(chip.oldsamples);
+            OPL3_Generate4Ch(chip, chip.samples);
             chip.samplecnt -= chip.rateratio;
         }
 
@@ -1168,7 +1194,22 @@ public sealed class Opl3 : IOpl3
                           + chip.samples[0] * chip.samplecnt) / chip.rateratio);
         buf[1] = (short)((chip.oldsamples[1] * (chip.rateratio - chip.samplecnt)
                           + chip.samples[1] * chip.samplecnt) / chip.rateratio);
+        buf[2] = (short)((chip.oldsamples[2] * (chip.rateratio - chip.samplecnt)
+                          + chip.samples[2] * chip.samplecnt) / chip.rateratio);
+        buf[3] = (short)((chip.oldsamples[3] * (chip.rateratio - chip.samplecnt)
+                          + chip.samples[3] * chip.samplecnt) / chip.rateratio);
+
         chip.samplecnt += 1 << RSM_FRAC;
+
+        return 4;
+    }
+
+    private static int OPL3_GenerateResampled(Opl3Chip chip, Span<short> buf)
+    {
+        Span<short> samples = stackalloc short[4];
+        OPL3_Generate4ChResampled(chip, samples);
+        buf[0] = samples[0];
+        buf[1] = samples[1];
 
         return 2;
     }
@@ -1371,6 +1412,16 @@ public sealed class Opl3 : IOpl3
         chip.writebuf_last = (writebuf_last + 1) % Opl3Chip.OPL_WRITEBUF_SIZE;
     }
 
+    private static int OPL3_Generate4ChStream(Opl3Chip chip, Span<short> sndptr, int numsamples)
+    {
+        var sndptr_idx = 0;
+
+        for (var i = 0; i < numsamples; i++)
+            sndptr_idx += OPL3_Generate4ChResampled(chip, sndptr.Slice(sndptr_idx));
+
+        return sndptr_idx;
+    }
+
     private static int OPL3_GenerateStream(Opl3Chip chip, Span<short> sndptr, int numsamples)
     {
         var sndptr_idx = 0;
@@ -1381,8 +1432,14 @@ public sealed class Opl3 : IOpl3
         return sndptr_idx;
     }
 
+    public int Generate4Ch(Opl3Chip chip, Span<short> buf) =>
+        OPL3_Generate4Ch(chip, buf);
+
     public int Generate(Opl3Chip chip, Span<short> buf) =>
         OPL3_Generate(chip, buf);
+
+    public int Generate4ChResampled(Opl3Chip chip, Span<short> buf) =>
+        OPL3_Generate4ChResampled(chip, buf);
 
     public int GenerateResampled(Opl3Chip chip, Span<short> buf) =>
         OPL3_GenerateResampled(chip, buf);
@@ -1395,6 +1452,9 @@ public sealed class Opl3 : IOpl3
 
     public void WriteRegBuffered(Opl3Chip chip, int reg, byte v) =>
         OPL3_WriteRegBuffered(chip, reg, v);
+
+    public int Generate4ChStream(Opl3Chip chip, Span<short> sndptr, int numsamples) =>
+        OPL3_Generate4ChStream(chip, sndptr, numsamples);
 
     public int GenerateStream(Opl3Chip chip, Span<short> sndptr, int numsamples) =>
         OPL3_GenerateStream(chip, sndptr, numsamples);
