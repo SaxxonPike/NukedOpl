@@ -41,6 +41,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace NukedOpl;
 
@@ -361,6 +362,7 @@ public sealed class Opl3 : IOpl3
         slot.eg_ksl = ksl & 0xFF;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void OPL3_EnvelopeCalc(Opl3Slot slot)
     {
         var reg_rate = 0;
@@ -518,6 +520,7 @@ public sealed class Opl3 : IOpl3
 
     /* Phase Generator */
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void OPL3_PhaseGenerate(Opl3Slot slot)
     {
         var chip = slot.chip;
@@ -650,11 +653,13 @@ public sealed class Opl3 : IOpl3
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void OPL3_SlotGenerate(Opl3Slot slot)
     {
         slot.out_[0] = envelope_sin[slot.reg_wf](slot.pg_phase_out + slot.mod[0], slot.eg_out);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void OPL3_SlotCalcFB(Opl3Slot slot)
     {
         if (slot.channel.fb != 0x00)
@@ -691,53 +696,37 @@ public sealed class Opl3 : IOpl3
             channel8.out_[1] = channel8.slotz[0].out_;
             channel8.out_[2] = channel8.slotz[1].out_;
             channel8.out_[3] = channel8.slotz[1].out_;
-            for (var chnum = 6; chnum < 9; chnum++)
-            {
+
+            for (var chnum = 6; chnum < 9; chnum++) 
                 chip.channel[chnum].chtype = ch_drum;
-            }
 
             OPL3_ChannelSetupAlg(channel6);
             OPL3_ChannelSetupAlg(channel7);
             OPL3_ChannelSetupAlg(channel8);
+            
             /* hh */
             if ((chip.rhy & 0x01) != 0)
-            {
                 OPL3_EnvelopeKeyOn(channel7.slotz[0], egk_drum);
-            }
             else
-            {
                 OPL3_EnvelopeKeyOff(channel7.slotz[0], egk_drum);
-            }
 
             /* tc */
             if ((chip.rhy & 0x02) != 0)
-            {
                 OPL3_EnvelopeKeyOn(channel8.slotz[1], egk_drum);
-            }
             else
-            {
                 OPL3_EnvelopeKeyOff(channel8.slotz[1], egk_drum);
-            }
 
             /* tom */
             if ((chip.rhy & 0x04) != 0)
-            {
                 OPL3_EnvelopeKeyOn(channel8.slotz[0], egk_drum);
-            }
             else
-            {
                 OPL3_EnvelopeKeyOff(channel8.slotz[0], egk_drum);
-            }
 
             /* sd */
             if ((chip.rhy & 0x08) != 0)
-            {
                 OPL3_EnvelopeKeyOn(channel7.slotz[1], egk_drum);
-            }
             else
-            {
                 OPL3_EnvelopeKeyOff(channel7.slotz[1], egk_drum);
-            }
 
             /* bd */
             if ((chip.rhy & 0x10) != 0)
@@ -1050,6 +1039,7 @@ public sealed class Opl3 : IOpl3
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int OPL3_ClipSample(int sample)
     {
         return sample switch
