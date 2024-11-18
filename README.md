@@ -6,10 +6,11 @@ This library is licensed under the Lesser GNU Public License 2.1, identical to t
 
 ### Prerequisites
 
-- .NET 5.0
+One of the following:
 
-Earlier .NET versions are probably possible, please issue a pull request if you make it so. You will likely need to modify
-everything around the use of `Span<>` for .NET Framework, or reference `System.Memory` for .NET Standard.
+- .NET 6.0 or greater
+- .NET Standard 2.0
+- .NET Framework 4.6.2+
 
 ### Using it in your .NET project
 
