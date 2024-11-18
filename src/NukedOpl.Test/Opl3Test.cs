@@ -34,7 +34,7 @@ public class Opl3Test
         Dsp.Normalize(buffer.AsSpan(0, size));
 
         using var output = File.Open(
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{resourceName}.wav"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{resourceName}-{DateTime.Now.Ticks}.wav"),
             FileMode.Create, FileAccess.Write);
         Riff.WriteWav16(output, buffer.AsSpan(0, size), Opl3.OPL_RATE, 2);
         output.Flush();

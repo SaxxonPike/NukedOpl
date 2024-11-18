@@ -811,7 +811,7 @@ public sealed class Opl3 : IOpl3
     {
         if (channel.chtype == ch_drum)
         {
-            if (channel.ch_num == 7 || channel.ch_num == 8)
+            if (channel.ch_num is 7 or 8)
             {
                 channel.slots[0].mod = channel.chip.zeromod;
                 channel.slots[1].mod = channel.chip.zeromod;
@@ -912,10 +912,8 @@ public sealed class Opl3 : IOpl3
         }
     }
 
-    private static void OPL3_ChannelWriteC0(Opl3Channel channel, byte data)
+    private static void OPL3_ChannelUpdateAlg(Opl3Channel channel)
     {
-        channel.fb = (data & 0x0e) >> 1;
-        channel.con = data & 0x01;
         channel.alg = channel.con;
         if (channel.chip.newm)
         {
@@ -940,6 +938,13 @@ public sealed class Opl3 : IOpl3
         {
             OPL3_ChannelSetupAlg(channel);
         }
+    }
+
+    private static void OPL3_ChannelWriteC0(Opl3Channel channel, byte data)
+    {
+        channel.fb = (data & 0x0e) >> 1;
+        channel.con = data & 0x01;
+        OPL3_ChannelUpdateAlg(channel);
 
         if (channel.chip.newm)
         {
@@ -1033,11 +1038,14 @@ public sealed class Opl3 : IOpl3
             {
                 chip.channel[chnum].chtype = ch_4op;
                 chip.channel[chnum + 3].chtype = ch_4op2;
+                OPL3_ChannelUpdateAlg(chip.channel[chnum]);
             }
             else
             {
                 chip.channel[chnum].chtype = ch_2op;
                 chip.channel[chnum + 3].chtype = ch_2op;
+                OPL3_ChannelUpdateAlg(chip.channel[chnum]);
+                OPL3_ChannelUpdateAlg(chip.channel[chnum + 3]);
             }
         }
     }
