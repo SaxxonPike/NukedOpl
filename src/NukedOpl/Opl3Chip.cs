@@ -60,6 +60,7 @@ public sealed class Opl3Chip
     public bool eg_timerrem { get; set; }
     public bool eg_state { get; set; }
     public int eg_add { get; set; }
+    public int eg_timer_lo { get; set; }
     public bool newm { get; set; }
     public int nts { get; set; }
     public int rhy { get; set; }

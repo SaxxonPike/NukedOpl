@@ -426,7 +426,7 @@ public sealed class Opl3 : IOpl3
             }
             else
             {
-                shift = (rate_hi & 0x03) + eg_incstep[rate_lo][slot.chip.timer & 0x03];
+                shift = (rate_hi & 0x03) + eg_incstep[rate_lo][slot.chip.eg_timer_lo];
                 if ((shift & 0x04) != 0)
                 {
                     shift = 0x03;
@@ -1140,6 +1140,8 @@ public sealed class Opl3 : IOpl3
                 chip.eg_add = 0;
             else
                 chip.eg_add = shift + 1;
+
+            chip.eg_timer_lo = unchecked((int)(chip.eg_timer & 3));
         }
 
         if (chip.eg_timerrem || chip.eg_state)
