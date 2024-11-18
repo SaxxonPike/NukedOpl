@@ -77,7 +77,7 @@ namespace NukedOpl.Test
                 }
 
                 state.Timer -= state.TicksPerSecond;
-                var rendered = state.Opl3.Generate(state.Chip, buffer[idx..]);
+                var rendered = state.Opl3.Generate(state.Chip, buffer.Slice(idx));
                 idx += rendered;
                 count -= rendered;
             }

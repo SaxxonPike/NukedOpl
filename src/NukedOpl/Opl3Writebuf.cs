@@ -37,19 +37,18 @@
  * Email: saxxonpike@gmail.com
  */
 
-namespace NukedOpl
-{
-    public sealed class Opl3Writebuf
-    {
-        public ulong time { get; set; }
-        public int reg { get; set; }
-        public byte data { get; set; }
+namespace NukedOpl;
 
-        public void Reset()
-        {
-            time = default;
-            reg = default;
-            data = default;
-        }
+public sealed class Opl3Writebuf
+{
+    public ulong time { get; set; }
+    public int reg { get; set; }
+    public byte data { get; set; }
+
+    public void Reset()
+    {
+        time = default;
+        reg = default;
+        data = default;
     }
 }
