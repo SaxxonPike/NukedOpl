@@ -679,18 +679,18 @@ public sealed class Opl3 : IOpl3
             var channel6 = chip.channel[6];
             var channel7 = chip.channel[7];
             var channel8 = chip.channel[8];
-            channel6.out_[0] = channel6.slots[1].out_;
-            channel6.out_[1] = channel6.slots[1].out_;
+            channel6.out_[0] = channel6.slotz[1].out_;
+            channel6.out_[1] = channel6.slotz[1].out_;
             channel6.out_[2] = chip.zeromod;
             channel6.out_[3] = chip.zeromod;
-            channel7.out_[0] = channel7.slots[0].out_;
-            channel7.out_[1] = channel7.slots[0].out_;
-            channel7.out_[2] = channel7.slots[1].out_;
-            channel7.out_[3] = channel7.slots[1].out_;
-            channel8.out_[0] = channel8.slots[0].out_;
-            channel8.out_[1] = channel8.slots[0].out_;
-            channel8.out_[2] = channel8.slots[1].out_;
-            channel8.out_[3] = channel8.slots[1].out_;
+            channel7.out_[0] = channel7.slotz[0].out_;
+            channel7.out_[1] = channel7.slotz[0].out_;
+            channel7.out_[2] = channel7.slotz[1].out_;
+            channel7.out_[3] = channel7.slotz[1].out_;
+            channel8.out_[0] = channel8.slotz[0].out_;
+            channel8.out_[1] = channel8.slotz[0].out_;
+            channel8.out_[2] = channel8.slotz[1].out_;
+            channel8.out_[3] = channel8.slotz[1].out_;
             for (var chnum = 6; chnum < 9; chnum++)
             {
                 chip.channel[chnum].chtype = ch_drum;
@@ -702,53 +702,53 @@ public sealed class Opl3 : IOpl3
             /* hh */
             if ((chip.rhy & 0x01) != 0)
             {
-                OPL3_EnvelopeKeyOn(channel7.slots[0], egk_drum);
+                OPL3_EnvelopeKeyOn(channel7.slotz[0], egk_drum);
             }
             else
             {
-                OPL3_EnvelopeKeyOff(channel7.slots[0], egk_drum);
+                OPL3_EnvelopeKeyOff(channel7.slotz[0], egk_drum);
             }
 
             /* tc */
             if ((chip.rhy & 0x02) != 0)
             {
-                OPL3_EnvelopeKeyOn(channel8.slots[1], egk_drum);
+                OPL3_EnvelopeKeyOn(channel8.slotz[1], egk_drum);
             }
             else
             {
-                OPL3_EnvelopeKeyOff(channel8.slots[1], egk_drum);
+                OPL3_EnvelopeKeyOff(channel8.slotz[1], egk_drum);
             }
 
             /* tom */
             if ((chip.rhy & 0x04) != 0)
             {
-                OPL3_EnvelopeKeyOn(channel8.slots[0], egk_drum);
+                OPL3_EnvelopeKeyOn(channel8.slotz[0], egk_drum);
             }
             else
             {
-                OPL3_EnvelopeKeyOff(channel8.slots[0], egk_drum);
+                OPL3_EnvelopeKeyOff(channel8.slotz[0], egk_drum);
             }
 
             /* sd */
             if ((chip.rhy & 0x08) != 0)
             {
-                OPL3_EnvelopeKeyOn(channel7.slots[1], egk_drum);
+                OPL3_EnvelopeKeyOn(channel7.slotz[1], egk_drum);
             }
             else
             {
-                OPL3_EnvelopeKeyOff(channel7.slots[1], egk_drum);
+                OPL3_EnvelopeKeyOff(channel7.slotz[1], egk_drum);
             }
 
             /* bd */
             if ((chip.rhy & 0x10) != 0)
             {
-                OPL3_EnvelopeKeyOn(channel6.slots[0], egk_drum);
-                OPL3_EnvelopeKeyOn(channel6.slots[1], egk_drum);
+                OPL3_EnvelopeKeyOn(channel6.slotz[0], egk_drum);
+                OPL3_EnvelopeKeyOn(channel6.slotz[1], egk_drum);
             }
             else
             {
-                OPL3_EnvelopeKeyOff(channel6.slots[0], egk_drum);
-                OPL3_EnvelopeKeyOff(channel6.slots[1], egk_drum);
+                OPL3_EnvelopeKeyOff(channel6.slotz[0], egk_drum);
+                OPL3_EnvelopeKeyOff(channel6.slotz[1], egk_drum);
             }
         }
         else
@@ -757,8 +757,8 @@ public sealed class Opl3 : IOpl3
             {
                 chip.channel[chnum].chtype = ch_2op;
                 OPL3_ChannelSetupAlg(chip.channel[chnum]);
-                OPL3_EnvelopeKeyOff(chip.channel[chnum].slots[0], egk_drum);
-                OPL3_EnvelopeKeyOff(chip.channel[chnum].slots[1], egk_drum);
+                OPL3_EnvelopeKeyOff(chip.channel[chnum].slotz[0], egk_drum);
+                OPL3_EnvelopeKeyOff(chip.channel[chnum].slotz[1], egk_drum);
             }
         }
     }
@@ -773,14 +773,14 @@ public sealed class Opl3 : IOpl3
         channel.f_num = (channel.f_num & 0x300) | data;
         channel.ksv = (channel.block << 1)
                       | ((channel.f_num >> (0x09 - channel.chip.nts)) & 0x01);
-        OPL3_EnvelopeUpdateKSL(channel.slots[0]);
-        OPL3_EnvelopeUpdateKSL(channel.slots[1]);
+        OPL3_EnvelopeUpdateKSL(channel.slotz[0]);
+        OPL3_EnvelopeUpdateKSL(channel.slotz[1]);
         if (channel.chip.newm && channel.chtype == ch_4op)
         {
             channel.pair.f_num = channel.f_num;
             channel.pair.ksv = channel.ksv;
-            OPL3_EnvelopeUpdateKSL(channel.pair.slots[0]);
-            OPL3_EnvelopeUpdateKSL(channel.pair.slots[1]);
+            OPL3_EnvelopeUpdateKSL(channel.pair.slotz[0]);
+            OPL3_EnvelopeUpdateKSL(channel.pair.slotz[1]);
         }
     }
 
@@ -795,15 +795,15 @@ public sealed class Opl3 : IOpl3
         channel.block = (data >> 2) & 0x07;
         channel.ksv = (channel.block << 1)
                       | ((channel.f_num >> (0x09 - channel.chip.nts)) & 0x01);
-        OPL3_EnvelopeUpdateKSL(channel.slots[0]);
-        OPL3_EnvelopeUpdateKSL(channel.slots[1]);
+        OPL3_EnvelopeUpdateKSL(channel.slotz[0]);
+        OPL3_EnvelopeUpdateKSL(channel.slotz[1]);
         if (channel.chip.newm && channel.chtype == ch_4op)
         {
             channel.pair.f_num = channel.f_num;
             channel.pair.block = channel.block;
             channel.pair.ksv = channel.ksv;
-            OPL3_EnvelopeUpdateKSL(channel.pair.slots[0]);
-            OPL3_EnvelopeUpdateKSL(channel.pair.slots[1]);
+            OPL3_EnvelopeUpdateKSL(channel.pair.slotz[0]);
+            OPL3_EnvelopeUpdateKSL(channel.pair.slotz[1]);
         }
     }
 
@@ -813,20 +813,20 @@ public sealed class Opl3 : IOpl3
         {
             if (channel.ch_num is 7 or 8)
             {
-                channel.slots[0].mod = channel.chip.zeromod;
-                channel.slots[1].mod = channel.chip.zeromod;
+                channel.slotz[0].mod = channel.chip.zeromod;
+                channel.slotz[1].mod = channel.chip.zeromod;
                 return;
             }
 
             switch (channel.alg & 0x01)
             {
                 case 0x00:
-                    channel.slots[0].mod = channel.slots[0].fbmod;
-                    channel.slots[1].mod = channel.slots[0].out_;
+                    channel.slotz[0].mod = channel.slotz[0].fbmod;
+                    channel.slotz[1].mod = channel.slotz[0].out_;
                     break;
                 case 0x01:
-                    channel.slots[0].mod = channel.slots[0].fbmod;
-                    channel.slots[1].mod = channel.chip.zeromod;
+                    channel.slotz[0].mod = channel.slotz[0].fbmod;
+                    channel.slotz[1].mod = channel.chip.zeromod;
                     break;
             }
 
@@ -847,43 +847,43 @@ public sealed class Opl3 : IOpl3
             switch (channel.alg & 0x03)
             {
                 case 0x00:
-                    channel.pair.slots[0].mod = channel.pair.slots[0].fbmod;
-                    channel.pair.slots[1].mod = channel.pair.slots[0].out_;
-                    channel.slots[0].mod = channel.pair.slots[1].out_;
-                    channel.slots[1].mod = channel.slots[0].out_;
-                    channel.out_[0] = channel.slots[1].out_;
+                    channel.pair.slotz[0].mod = channel.pair.slotz[0].fbmod;
+                    channel.pair.slotz[1].mod = channel.pair.slotz[0].out_;
+                    channel.slotz[0].mod = channel.pair.slotz[1].out_;
+                    channel.slotz[1].mod = channel.slotz[0].out_;
+                    channel.out_[0] = channel.slotz[1].out_;
                     channel.out_[1] = channel.chip.zeromod;
                     channel.out_[2] = channel.chip.zeromod;
                     channel.out_[3] = channel.chip.zeromod;
                     break;
                 case 0x01:
-                    channel.pair.slots[0].mod = channel.pair.slots[0].fbmod;
-                    channel.pair.slots[1].mod = channel.pair.slots[0].out_;
-                    channel.slots[0].mod = channel.chip.zeromod;
-                    channel.slots[1].mod = channel.slots[0].out_;
-                    channel.out_[0] = channel.pair.slots[1].out_;
-                    channel.out_[1] = channel.slots[1].out_;
+                    channel.pair.slotz[0].mod = channel.pair.slotz[0].fbmod;
+                    channel.pair.slotz[1].mod = channel.pair.slotz[0].out_;
+                    channel.slotz[0].mod = channel.chip.zeromod;
+                    channel.slotz[1].mod = channel.slotz[0].out_;
+                    channel.out_[0] = channel.pair.slotz[1].out_;
+                    channel.out_[1] = channel.slotz[1].out_;
                     channel.out_[2] = channel.chip.zeromod;
                     channel.out_[3] = channel.chip.zeromod;
                     break;
                 case 0x02:
-                    channel.pair.slots[0].mod = channel.pair.slots[0].fbmod;
-                    channel.pair.slots[1].mod = channel.chip.zeromod;
-                    channel.slots[0].mod = channel.pair.slots[1].out_;
-                    channel.slots[1].mod = channel.slots[0].out_;
-                    channel.out_[0] = channel.pair.slots[0].out_;
-                    channel.out_[1] = channel.slots[1].out_;
+                    channel.pair.slotz[0].mod = channel.pair.slotz[0].fbmod;
+                    channel.pair.slotz[1].mod = channel.chip.zeromod;
+                    channel.slotz[0].mod = channel.pair.slotz[1].out_;
+                    channel.slotz[1].mod = channel.slotz[0].out_;
+                    channel.out_[0] = channel.pair.slotz[0].out_;
+                    channel.out_[1] = channel.slotz[1].out_;
                     channel.out_[2] = channel.chip.zeromod;
                     channel.out_[3] = channel.chip.zeromod;
                     break;
                 case 0x03:
-                    channel.pair.slots[0].mod = channel.pair.slots[0].fbmod;
-                    channel.pair.slots[1].mod = channel.chip.zeromod;
-                    channel.slots[0].mod = channel.pair.slots[1].out_;
-                    channel.slots[1].mod = channel.chip.zeromod;
-                    channel.out_[0] = channel.pair.slots[0].out_;
-                    channel.out_[1] = channel.slots[0].out_;
-                    channel.out_[2] = channel.slots[1].out_;
+                    channel.pair.slotz[0].mod = channel.pair.slotz[0].fbmod;
+                    channel.pair.slotz[1].mod = channel.chip.zeromod;
+                    channel.slotz[0].mod = channel.pair.slotz[1].out_;
+                    channel.slotz[1].mod = channel.chip.zeromod;
+                    channel.out_[0] = channel.pair.slotz[0].out_;
+                    channel.out_[1] = channel.slotz[0].out_;
+                    channel.out_[2] = channel.slotz[1].out_;
                     channel.out_[3] = channel.chip.zeromod;
                     break;
             }
@@ -893,18 +893,18 @@ public sealed class Opl3 : IOpl3
             switch (channel.alg & 0x01)
             {
                 case 0x00:
-                    channel.slots[0].mod = channel.slots[0].fbmod;
-                    channel.slots[1].mod = channel.slots[0].out_;
-                    channel.out_[0] = channel.slots[1].out_;
+                    channel.slotz[0].mod = channel.slotz[0].fbmod;
+                    channel.slotz[1].mod = channel.slotz[0].out_;
+                    channel.out_[0] = channel.slotz[1].out_;
                     channel.out_[1] = channel.chip.zeromod;
                     channel.out_[2] = channel.chip.zeromod;
                     channel.out_[3] = channel.chip.zeromod;
                     break;
                 case 0x01:
-                    channel.slots[0].mod = channel.slots[0].fbmod;
-                    channel.slots[1].mod = channel.chip.zeromod;
-                    channel.out_[0] = channel.slots[0].out_;
-                    channel.out_[1] = channel.slots[1].out_;
+                    channel.slotz[0].mod = channel.slotz[0].fbmod;
+                    channel.slotz[1].mod = channel.chip.zeromod;
+                    channel.out_[0] = channel.slotz[0].out_;
+                    channel.out_[1] = channel.slotz[1].out_;
                     channel.out_[2] = channel.chip.zeromod;
                     channel.out_[3] = channel.chip.zeromod;
                     break;
@@ -983,21 +983,21 @@ public sealed class Opl3 : IOpl3
             switch (channel.chtype)
             {
                 case ch_4op:
-                    OPL3_EnvelopeKeyOn(channel.slots[0], egk_norm);
-                    OPL3_EnvelopeKeyOn(channel.slots[1], egk_norm);
-                    OPL3_EnvelopeKeyOn(channel.pair.slots[0], egk_norm);
-                    OPL3_EnvelopeKeyOn(channel.pair.slots[1], egk_norm);
+                    OPL3_EnvelopeKeyOn(channel.slotz[0], egk_norm);
+                    OPL3_EnvelopeKeyOn(channel.slotz[1], egk_norm);
+                    OPL3_EnvelopeKeyOn(channel.pair.slotz[0], egk_norm);
+                    OPL3_EnvelopeKeyOn(channel.pair.slotz[1], egk_norm);
                     break;
                 case ch_2op or ch_drum:
-                    OPL3_EnvelopeKeyOn(channel.slots[0], egk_norm);
-                    OPL3_EnvelopeKeyOn(channel.slots[1], egk_norm);
+                    OPL3_EnvelopeKeyOn(channel.slotz[0], egk_norm);
+                    OPL3_EnvelopeKeyOn(channel.slotz[1], egk_norm);
                     break;
             }
         }
         else
         {
-            OPL3_EnvelopeKeyOn(channel.slots[0], egk_norm);
-            OPL3_EnvelopeKeyOn(channel.slots[1], egk_norm);
+            OPL3_EnvelopeKeyOn(channel.slotz[0], egk_norm);
+            OPL3_EnvelopeKeyOn(channel.slotz[1], egk_norm);
         }
     }
 
@@ -1008,21 +1008,21 @@ public sealed class Opl3 : IOpl3
             switch (channel.chtype)
             {
                 case ch_4op:
-                    OPL3_EnvelopeKeyOff(channel.slots[0], egk_norm);
-                    OPL3_EnvelopeKeyOff(channel.slots[1], egk_norm);
-                    OPL3_EnvelopeKeyOff(channel.pair.slots[0], egk_norm);
-                    OPL3_EnvelopeKeyOff(channel.pair.slots[1], egk_norm);
+                    OPL3_EnvelopeKeyOff(channel.slotz[0], egk_norm);
+                    OPL3_EnvelopeKeyOff(channel.slotz[1], egk_norm);
+                    OPL3_EnvelopeKeyOff(channel.pair.slotz[0], egk_norm);
+                    OPL3_EnvelopeKeyOff(channel.pair.slotz[1], egk_norm);
                     break;
                 case ch_2op or ch_drum:
-                    OPL3_EnvelopeKeyOff(channel.slots[0], egk_norm);
-                    OPL3_EnvelopeKeyOff(channel.slots[1], egk_norm);
+                    OPL3_EnvelopeKeyOff(channel.slotz[0], egk_norm);
+                    OPL3_EnvelopeKeyOff(channel.slotz[1], egk_norm);
                     break;
             }
         }
         else
         {
-            OPL3_EnvelopeKeyOff(channel.slots[0], egk_norm);
-            OPL3_EnvelopeKeyOff(channel.slots[1], egk_norm);
+            OPL3_EnvelopeKeyOff(channel.slotz[0], egk_norm);
+            OPL3_EnvelopeKeyOff(channel.slotz[1], egk_norm);
         }
     }
 
@@ -1240,8 +1240,8 @@ public sealed class Opl3 : IOpl3
         {
             var channel = chip.channel[channum];
             var local_ch_slot = ch_slot[channum];
-            channel.slots[0] = chip.slot[local_ch_slot];
-            channel.slots[1] = chip.slot[local_ch_slot + 3];
+            channel.slotz[0] = chip.slot[local_ch_slot];
+            channel.slotz[1] = chip.slot[local_ch_slot + 3];
             chip.slot[local_ch_slot].channel = channel;
             chip.slot[local_ch_slot + 3].channel = channel;
             channel.pair = (channum % 9) switch

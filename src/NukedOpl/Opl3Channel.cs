@@ -32,7 +32,7 @@
 
 /*
  * .NET conversion written by Anthony Konzel.
- * 
+ *
  * Github: saxxonpike
  * Email: saxxonpike@gmail.com
  */
@@ -43,7 +43,10 @@ public sealed class Opl3Channel
 {
     public Opl3Channel(Opl3Chip chip) => this.chip = chip;
 
-    public Opl3Slot[] slots { get; } = [null, null];
+    // The name is "slotz" presumably due to a naming conflict with Qt in the
+    // upstream code.
+
+    public Opl3Slot[] slotz { get; } = [null, null];
     public Opl3Channel pair { get; set; }
     public Opl3Chip chip { get; }
 
@@ -66,8 +69,8 @@ public sealed class Opl3Channel
 
     public void Reset()
     {
-        slots[0] = null;
-        slots[1] = null;
+        slotz[0] = null;
+        slotz[1] = null;
         pair = null;
         out_[0] = new int[1];
         out_[1] = new int[1];
