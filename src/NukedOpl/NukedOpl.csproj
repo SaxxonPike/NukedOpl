@@ -7,6 +7,7 @@
         <Version>1.8.1</Version>
         <Authors>SaxxonPike, Nuke.YKT</Authors>
         <PackageLicenseExpression>LGPL-2.1-or-later</PackageLicenseExpression>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' ">
         <!-- required to backport .NET Core features -->

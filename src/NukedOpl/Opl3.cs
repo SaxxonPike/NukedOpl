@@ -40,24 +40,12 @@
 // ReSharper disable InconsistentNaming
 
 using System;
-using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace NukedOpl;
 
 public sealed class Opl3 : IOpl3
 {
-    private readonly TextWriter _logger;
-
-    public Opl3()
-    {
-    }
-
-    public Opl3(TextWriter logger)
-    {
-        _logger = logger;
-    }
-
     public const int OPL_RATE = 49716;
 
     private const int OPL_WRITEBUF_DELAY = 2;
@@ -206,6 +194,7 @@ public sealed class Opl3 : IOpl3
 
     private delegate int EnvelopeSinFunc(int phase, int envelope);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int OPL3_EnvelopeCalcExp(int level)
     {
         if (level is > 0x1FFF or < 0)
@@ -369,7 +358,7 @@ public sealed class Opl3 : IOpl3
         var reset = false;
         slot.eg_out = (slot.eg_rout + (slot.reg_tl << 2)
                                     + (slot.eg_ksl >> kslshift[slot.reg_ksl]) +
-                                    (slot.trem[0] & 0xFF)) & 0xFFFF;
+                                    ((slot.trem?.Invoke() ?? 0) & 0xFF)) & 0xFFFF;
         if (slot.key != 0 && slot.eg_gen == envelope_gen_num_release)
         {
             reset = true;
@@ -579,7 +568,7 @@ public sealed class Opl3 : IOpl3
 
     private static void OPL3_SlotWrite20(Opl3Slot slot, byte data)
     {
-        slot.trem = ((data >> 7) & 0x01) != 0 ? slot.chip.tremolo : slot.chip.zeromod;
+        slot.trem = ((data >> 7) & 0x01) != 0 ? slot.chip.GetTremolo : default;
         slot.reg_vib = ((data >> 6) & 0x01) != 0;
         slot.reg_type = ((data >> 5) & 0x01) != 0;
         slot.reg_ksr = ((data >> 4) & 0x01) != 0;
@@ -619,17 +608,17 @@ public sealed class Opl3 : IOpl3
 
     private static void OPL3_SlotGenerate(Opl3Slot slot)
     {
-        slot.out_[0] = envelope_sin[slot.reg_wf](slot.pg_phase_out + slot.mod[0], slot.eg_out);
+        slot.out_ = envelope_sin[slot.reg_wf](slot.pg_phase_out + (slot.mod?.Invoke() ?? 0), slot.eg_out);
     }
 
     private static void OPL3_SlotCalcFB(Opl3Slot slot)
     {
         if (slot.channel.fb != 0x00)
-            slot.fbmod[0] = (slot.prout + slot.out_[0]) >> (0x09 - slot.channel.fb);
+            slot.fbmod = (slot.prout + slot.out_) >> (0x09 - slot.channel.fb);
         else
-            slot.fbmod[0] = 0;
+            slot.fbmod = 0;
 
-        slot.prout = slot.out_[0];
+        slot.prout = slot.out_;
     }
 
     /* Channel */
@@ -642,12 +631,12 @@ public sealed class Opl3 : IOpl3
             var channel6 = chip.channel[6];
             var channel7 = chip.channel[7];
             var channel8 = chip.channel[8];
-            channel6.out_[0] = channel6.out_[1] = channel6.slotz[1].out_;
-            channel6.out_[2] = channel6.out_[3] = chip.zeromod;
-            channel7.out_[0] = channel7.out_[1] = channel7.slotz[0].out_;
-            channel7.out_[2] = channel7.out_[3] = channel7.slotz[1].out_;
-            channel8.out_[0] = channel8.out_[1] = channel8.slotz[0].out_;
-            channel8.out_[2] = channel8.out_[3] = channel8.slotz[1].out_;
+            channel6.out_[0] = channel6.out_[1] = () => channel6.slotz[1].out_;
+            channel6.out_[2] = channel6.out_[3] = default;
+            channel7.out_[0] = channel7.out_[1] = () => channel7.slotz[0].out_;
+            channel7.out_[2] = channel7.out_[3] = () => channel7.slotz[1].out_;
+            channel8.out_[0] = channel8.out_[1] = () => channel8.slotz[0].out_;
+            channel8.out_[2] = channel8.out_[3] = () => channel8.slotz[1].out_;
 
             for (var chnum = 6; chnum < 9; chnum++)
                 chip.channel[chnum].chtype = ch_drum;
@@ -752,20 +741,20 @@ public sealed class Opl3 : IOpl3
         {
             if (channel.ch_num is 7 or 8)
             {
-                channel.slotz[0].mod = channel.chip.zeromod;
-                channel.slotz[1].mod = channel.chip.zeromod;
+                channel.slotz[0].mod = default;
+                channel.slotz[1].mod = default;
                 return;
             }
 
             switch (channel.alg & 0x01)
             {
                 case 0x00:
-                    channel.slotz[0].mod = channel.slotz[0].fbmod;
-                    channel.slotz[1].mod = channel.slotz[0].out_;
+                    channel.slotz[0].mod = () => channel.slotz[0].fbmod;
+                    channel.slotz[1].mod = () => channel.slotz[0].out_;
                     break;
                 case 0x01:
-                    channel.slotz[0].mod = channel.slotz[0].fbmod;
-                    channel.slotz[1].mod = channel.chip.zeromod;
+                    channel.slotz[0].mod = () => channel.slotz[0].fbmod;
+                    channel.slotz[1].mod = default;
                     break;
             }
 
@@ -777,51 +766,48 @@ public sealed class Opl3 : IOpl3
 
         if ((channel.alg & 0x04) != 0)
         {
-            channel.pair.out_[0] = channel.chip.zeromod;
-            channel.pair.out_[1] = channel.chip.zeromod;
-            channel.pair.out_[2] = channel.chip.zeromod;
-            channel.pair.out_[3] = channel.chip.zeromod;
+            channel.pair.out_.AsSpan().Clear();
             switch (channel.alg & 0x03)
             {
                 case 0x00:
-                    channel.pair.slotz[0].mod = channel.pair.slotz[0].fbmod;
-                    channel.pair.slotz[1].mod = channel.pair.slotz[0].out_;
-                    channel.slotz[0].mod = channel.pair.slotz[1].out_;
-                    channel.slotz[1].mod = channel.slotz[0].out_;
-                    channel.out_[0] = channel.slotz[1].out_;
-                    channel.out_[1] = channel.chip.zeromod;
-                    channel.out_[2] = channel.chip.zeromod;
-                    channel.out_[3] = channel.chip.zeromod;
+                    channel.pair.slotz[0].mod = () => channel.pair.slotz[0].fbmod;
+                    channel.pair.slotz[1].mod = () => channel.pair.slotz[0].out_;
+                    channel.slotz[0].mod = () => channel.pair.slotz[1].out_;
+                    channel.slotz[1].mod = () => channel.slotz[0].out_;
+                    channel.out_[0] = () => channel.slotz[1].out_;
+                    channel.out_[1] = default;
+                    channel.out_[2] = default;
+                    channel.out_[3] = default;
                     break;
                 case 0x01:
-                    channel.pair.slotz[0].mod = channel.pair.slotz[0].fbmod;
-                    channel.pair.slotz[1].mod = channel.pair.slotz[0].out_;
-                    channel.slotz[0].mod = channel.chip.zeromod;
-                    channel.slotz[1].mod = channel.slotz[0].out_;
-                    channel.out_[0] = channel.pair.slotz[1].out_;
-                    channel.out_[1] = channel.slotz[1].out_;
-                    channel.out_[2] = channel.chip.zeromod;
-                    channel.out_[3] = channel.chip.zeromod;
+                    channel.pair.slotz[0].mod = () => channel.pair.slotz[0].fbmod;
+                    channel.pair.slotz[1].mod = () => channel.pair.slotz[0].out_;
+                    channel.slotz[0].mod = default;
+                    channel.slotz[1].mod = () => channel.slotz[0].out_;
+                    channel.out_[0] = () => channel.pair.slotz[1].out_;
+                    channel.out_[1] = () => channel.slotz[1].out_;
+                    channel.out_[2] = default;
+                    channel.out_[3] = default;
                     break;
                 case 0x02:
-                    channel.pair.slotz[0].mod = channel.pair.slotz[0].fbmod;
-                    channel.pair.slotz[1].mod = channel.chip.zeromod;
-                    channel.slotz[0].mod = channel.pair.slotz[1].out_;
-                    channel.slotz[1].mod = channel.slotz[0].out_;
-                    channel.out_[0] = channel.pair.slotz[0].out_;
-                    channel.out_[1] = channel.slotz[1].out_;
-                    channel.out_[2] = channel.chip.zeromod;
-                    channel.out_[3] = channel.chip.zeromod;
+                    channel.pair.slotz[0].mod = () => channel.pair.slotz[0].fbmod;
+                    channel.pair.slotz[1].mod = default;
+                    channel.slotz[0].mod = () => channel.pair.slotz[1].out_;
+                    channel.slotz[1].mod = () => channel.slotz[0].out_;
+                    channel.out_[0] = () => channel.pair.slotz[0].out_;
+                    channel.out_[1] = () => channel.slotz[1].out_;
+                    channel.out_[2] = default;
+                    channel.out_[3] = default;
                     break;
                 case 0x03:
-                    channel.pair.slotz[0].mod = channel.pair.slotz[0].fbmod;
-                    channel.pair.slotz[1].mod = channel.chip.zeromod;
-                    channel.slotz[0].mod = channel.pair.slotz[1].out_;
-                    channel.slotz[1].mod = channel.chip.zeromod;
-                    channel.out_[0] = channel.pair.slotz[0].out_;
-                    channel.out_[1] = channel.slotz[0].out_;
-                    channel.out_[2] = channel.slotz[1].out_;
-                    channel.out_[3] = channel.chip.zeromod;
+                    channel.pair.slotz[0].mod = () => channel.pair.slotz[0].fbmod;
+                    channel.pair.slotz[1].mod = default;
+                    channel.slotz[0].mod = () => channel.pair.slotz[1].out_;
+                    channel.slotz[1].mod = default;
+                    channel.out_[0] = () => channel.pair.slotz[0].out_;
+                    channel.out_[1] = () => channel.slotz[0].out_;
+                    channel.out_[2] = () => channel.slotz[1].out_;
+                    channel.out_[3] = default;
                     break;
             }
         }
@@ -830,20 +816,20 @@ public sealed class Opl3 : IOpl3
             switch (channel.alg & 0x01)
             {
                 case 0x00:
-                    channel.slotz[0].mod = channel.slotz[0].fbmod;
-                    channel.slotz[1].mod = channel.slotz[0].out_;
-                    channel.out_[0] = channel.slotz[1].out_;
-                    channel.out_[1] = channel.chip.zeromod;
-                    channel.out_[2] = channel.chip.zeromod;
-                    channel.out_[3] = channel.chip.zeromod;
+                    channel.slotz[0].mod = () => channel.slotz[0].fbmod;
+                    channel.slotz[1].mod = () => channel.slotz[0].out_;
+                    channel.out_[0] = () => channel.slotz[1].out_;
+                    channel.out_[1] = default;
+                    channel.out_[2] = default;
+                    channel.out_[3] = default;
                     break;
                 case 0x01:
-                    channel.slotz[0].mod = channel.slotz[0].fbmod;
-                    channel.slotz[1].mod = channel.chip.zeromod;
-                    channel.out_[0] = channel.slotz[0].out_;
-                    channel.out_[1] = channel.slotz[1].out_;
-                    channel.out_[2] = channel.chip.zeromod;
-                    channel.out_[3] = channel.chip.zeromod;
+                    channel.slotz[0].mod = () => channel.slotz[0].fbmod;
+                    channel.slotz[1].mod = default;
+                    channel.out_[0] = () => channel.slotz[0].out_;
+                    channel.out_[1] = () => channel.slotz[1].out_;
+                    channel.out_[2] = default;
+                    channel.out_[3] = default;
                     break;
             }
         }
@@ -1008,7 +994,7 @@ public sealed class Opl3 : IOpl3
     private static int OPL3_Generate4Ch(Opl3Chip chip, Span<short> buf4)
     {
         Opl3Channel channel;
-        int[][] out_;
+        Func<int>?[] out_;
         int accm;
         var shift = 0;
 
@@ -1025,7 +1011,10 @@ public sealed class Opl3 : IOpl3
         {
             channel = chip.channel[ii];
             out_ = channel.out_;
-            accm = out_[0][0] + out_[1][0] + out_[2][0] + out_[3][0];
+            accm = (out_[0]?.Invoke() ?? 0) +
+                   (out_[1]?.Invoke() ?? 0) +
+                   (out_[2]?.Invoke() ?? 0) +
+                   (out_[3]?.Invoke() ?? 0);
             mix0 += unchecked((short)(chip.stereoext
                 ? (accm * channel.leftpan) >> 16
                 : accm & channel.cha));
@@ -1044,7 +1033,10 @@ public sealed class Opl3 : IOpl3
         {
             channel = chip.channel[ii];
             out_ = channel.out_;
-            accm = out_[0][0] + out_[1][0] + out_[2][0] + out_[3][0];
+            accm = (out_[0]?.Invoke() ?? 0) +
+                   (out_[1]?.Invoke() ?? 0) +
+                   (out_[2]?.Invoke() ?? 0) +
+                   (out_[3]?.Invoke() ?? 0);
             mix0 += unchecked((short)(chip.stereoext
                 ? (accm * channel.rightpan) >> 16
                 : accm & channel.chb));
@@ -1058,9 +1050,9 @@ public sealed class Opl3 : IOpl3
             chip.tremolopos = (chip.tremolopos + 1) % 210;
 
         if (chip.tremolopos < 105)
-            chip.tremolo[0] = chip.tremolopos >> chip.tremoloshift;
+            chip.tremolo = chip.tremolopos >> chip.tremoloshift;
         else
-            chip.tremolo[0] = (210 - chip.tremolopos) >> chip.tremoloshift;
+            chip.tremolo = (210 - chip.tremolopos) >> chip.tremoloshift;
 
         if ((chip.timer & 0x3ff) == 0x3ff)
             chip.vibpos = (chip.vibpos + 1) & 7;
@@ -1096,20 +1088,15 @@ public sealed class Opl3 : IOpl3
 
         chip.eg_state ^= true;
 
-        while (true)
+        while (chip.writebuf.Count > 0)
         {
-            var writebuf = chip.writebuf[chip.writebuf_cur];
+            var writebuf = chip.writebuf.Peek();
             if (!(writebuf.time <= chip.writebuf_samplecnt))
                 break;
 
-            if ((writebuf.reg & 0x200) == 0)
-            {
-                break;
-            }
-
+            writebuf = chip.writebuf.Dequeue();
             writebuf.reg &= 0x1ff;
             OPL3_WriteReg(chip, writebuf.reg, writebuf.data);
-            chip.writebuf_cur = (chip.writebuf_cur + 1) % Opl3Chip.OPL_WRITEBUF_SIZE;
         }
 
         chip.writebuf_samplecnt++;
@@ -1166,11 +1153,11 @@ public sealed class Opl3 : IOpl3
         for (var slotnum = 0; slotnum < 36; slotnum++)
         {
             var slot = chip.slot[slotnum];
-            slot.mod = chip.zeromod;
+            slot.mod = default;
             slot.eg_rout = 0x1ff;
             slot.eg_out = 0x1ff;
             slot.eg_gen = envelope_gen_num_release;
-            slot.trem = chip.zeromod;
+            slot.trem = default;
             slot.slot_num = slotnum;
         }
 
@@ -1189,10 +1176,7 @@ public sealed class Opl3 : IOpl3
                 _ => channel.pair
             };
 
-            channel.out_[0] = chip.zeromod;
-            channel.out_[1] = chip.zeromod;
-            channel.out_[2] = chip.zeromod;
-            channel.out_[3] = chip.zeromod;
+            channel.out_.AsSpan().Clear();
             channel.chtype = ch_2op;
             channel.cha = 0xffff;
             channel.chb = 0xffff;
@@ -1334,28 +1318,21 @@ public sealed class Opl3 : IOpl3
 
     private static void OPL3_WriteRegBuffered(Opl3Chip chip, int reg, byte v)
     {
-        var writebuf_last = chip.writebuf_last;
-        var writebuf = chip.writebuf[writebuf_last];
-
-        if ((writebuf.reg & 0x200) != 0)
+        var write = new Opl3Writebuf
         {
-            OPL3_WriteReg(chip, writebuf.reg & 0x1ff, writebuf.data);
+            reg = reg | 0x200,
+            data = v
+        };
 
-            chip.writebuf_cur = (writebuf_last + 1) % Opl3Chip.OPL_WRITEBUF_SIZE;
-            chip.writebuf_samplecnt = writebuf.time;
-        }
-
-        writebuf.reg = reg | 0x200;
-        writebuf.data = v;
         var time1 = chip.writebuf_lasttime + OPL_WRITEBUF_DELAY;
         var time2 = chip.writebuf_samplecnt;
 
         if (time1 < time2)
             time1 = time2;
 
-        writebuf.time = time1;
+        write.time = time1;
         chip.writebuf_lasttime = time1;
-        chip.writebuf_last = (writebuf_last + 1) % Opl3Chip.OPL_WRITEBUF_SIZE;
+        chip.writebuf.Enqueue(write);
     }
 
     private static int OPL3_Generate4ChStream(Opl3Chip chip, Span<short> sndptr, int numsamples)
