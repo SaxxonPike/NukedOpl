@@ -37,21 +37,25 @@
  * Email: saxxonpike@gmail.com
  */
 
+using System;
+
 namespace NukedOpl;
 
 public sealed class Opl3Channel
 {
-    public Opl3Channel(Opl3Chip chip) => this.chip = chip;
+    public delegate int MixFunc(Opl3Channel c);
+    
+    internal Opl3Channel(Opl3Chip chip) => this.chip = chip;
 
     // The name is "slotz" presumably due to a naming conflict with Qt in the
     // upstream code.
 
-    public Opl3Slot[] slotz { get; } = [null, null];
-    public Opl3Channel pair { get; set; }
+    public Opl3Slot slot0 { get; internal set; } = null!;
+    public Opl3Slot slot1 { get; internal set; } = null!;
+    public Opl3Channel pair { get; internal set; } = null!;
     public Opl3Chip chip { get; }
 
-    public int[][] out_ { get; } = [new int[1], new int[1], new int[1], new int[1]];
-
+    public MixFunc? mix { get; set; }
     public int leftpan { get; set; }
     public int rightpan { get; set; }
     public int chtype { get; set; }
@@ -69,13 +73,10 @@ public sealed class Opl3Channel
 
     public void Reset()
     {
-        slotz[0] = null;
-        slotz[1] = null;
-        pair = null;
-        out_[0] = new int[1];
-        out_[1] = new int[1];
-        out_[2] = new int[1];
-        out_[3] = new int[1];
+        slot0 = null!;
+        slot1 = null!;
+        pair = null!;
+        mix = default;
         leftpan = default;
         rightpan = default;
         chtype = default;

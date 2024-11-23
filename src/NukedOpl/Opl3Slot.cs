@@ -37,17 +37,20 @@
  * Email: saxxonpike@gmail.com
  */
 
+using System;
+
 namespace NukedOpl;
 
-public sealed class Opl3Slot
+public sealed class Opl3Slot(Opl3Chip chip)
 {
-    public Opl3Slot(Opl3Chip chip) => this.chip = chip;
-
-    public Opl3Channel channel { get; set; }
-    public Opl3Chip chip { get; }
-    public int[] out_ { get; set; }
-    public int[] fbmod { get; set; }
-    public int[] mod { get; set; }
+    public delegate int ModFunc(Opl3Channel c);
+    public delegate int TremFunc(Opl3Slot s);
+    
+    public Opl3Channel channel { get; internal set; } = null!;
+    public Opl3Chip chip { get; } = chip;
+    public int out_ { get; set; }
+    public int fbmod { get; set; }
+    public ModFunc? mod { get; set; }
     public int prout { get; set; }
     public int eg_rout { get; set; }
     public int eg_out { get; set; }
@@ -55,7 +58,7 @@ public sealed class Opl3Slot
     public int eg_gen { get; set; }
     public int eg_rate { get; set; }
     public int eg_ksl { get; set; }
-    public int[] trem { get; set; }
+    public TremFunc? trem { get; set; }
     public bool reg_vib { get; set; }
     public bool reg_type { get; set; }
     public bool reg_ksr { get; set; }
@@ -75,9 +78,9 @@ public sealed class Opl3Slot
 
     public void Reset()
     {
-        out_ = new int[1];
-        fbmod = new int[1];
-        mod = new int[1];
+        out_ = default;
+        fbmod = default;
+        mod = default;
         prout = default;
         eg_rout = default;
         eg_out = default;
@@ -85,7 +88,7 @@ public sealed class Opl3Slot
         eg_gen = default;
         eg_rate = default;
         eg_ksl = default;
-        trem = new int[1];
+        trem = default;
         reg_vib = default;
         reg_type = default;
         reg_ksl = default;

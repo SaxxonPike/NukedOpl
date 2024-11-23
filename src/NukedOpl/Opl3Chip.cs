@@ -32,10 +32,13 @@
 
 /*
  * .NET conversion written by Anthony Konzel.
- * 
+ *
  * Github: saxxonpike
  * Email: saxxonpike@gmail.com
  */
+
+using System;
+using System.Collections.Generic;
 
 namespace NukedOpl;
 
@@ -49,8 +52,7 @@ public sealed class Opl3Chip
             channel[i] = new Opl3Channel(this);
         for (var i = 0; i < slot.Length; i++)
             slot[i] = new Opl3Slot(this);
-        for (var i = 0; i < writebuf.Length; i++)
-            writebuf[i] = new Opl3Writebuf();
+        writebuf.Clear();
     }
 
     public Opl3Channel[] channel { get; } = new Opl3Channel[18];
@@ -66,12 +68,14 @@ public sealed class Opl3Chip
     public int rhy { get; set; }
     public int vibpos { get; set; }
     public int vibshift { get; set; }
-    public int[] tremolo { get; set; }
+    public int tremolo { get; set; }
     public int tremolopos { get; set; }
     public int tremoloshift { get; set; }
     public int noise { get; set; }
-    public int[] zeromod { get; set; }
-    public int[] mixbuff { get; } = new int[4];
+    public int mixbuff0 { get; set; }
+    public int mixbuff1 { get; set; }
+    public int mixbuff2 { get; set; }
+    public int mixbuff3 { get; set; }
     public bool rm_hh_bit2 { get; set; }
     public bool rm_hh_bit3 { get; set; }
     public bool rm_hh_bit7 { get; set; }
@@ -87,10 +91,8 @@ public sealed class Opl3Chip
     public short[] samples { get; } = new short[4];
 
     public ulong writebuf_samplecnt { get; set; }
-    public uint writebuf_cur { get; set; }
-    public uint writebuf_last { get; set; }
     public ulong writebuf_lasttime { get; set; }
-    public Opl3Writebuf[] writebuf { get; } = new Opl3Writebuf[OPL_WRITEBUF_SIZE];
+    public Queue<Opl3Writebuf> writebuf { get; } = new();
 
     public void Reset()
     {
@@ -108,13 +110,14 @@ public sealed class Opl3Chip
         rhy = default;
         vibpos = default;
         vibshift = default;
-        tremolo = new int[1];
+        tremolo = default;
         tremolopos = default;
         tremoloshift = default;
         noise = default;
-        zeromod = new int[1];
-        for (var i = 0; i < mixbuff.Length; i++)
-            mixbuff[i] = default;
+        mixbuff0 = default;
+        mixbuff1 = default;
+        mixbuff2 = default;
+        mixbuff3 = default;
         rm_hh_bit2 = default;
         rm_hh_bit3 = default;
         rm_hh_bit7 = default;
@@ -124,15 +127,13 @@ public sealed class Opl3Chip
         stereoext = default;
         rateratio = default;
         samplecnt = default;
-        for (var i = 0; i < oldsamples.Length; i++)
-            oldsamples[i] = default;
-        for (var i = 0; i < samples.Length; i++)
-            samples[i] = default;
+        oldsamples.AsSpan().Clear();
+        samples.AsSpan().Clear();
         writebuf_samplecnt = default;
-        writebuf_cur = default;
-        writebuf_last = default;
         writebuf_lasttime = default;
         foreach (var x in writebuf)
             x.Reset();
     }
+
+    internal int GetTremolo() => tremolo;
 }
