@@ -43,11 +43,14 @@ namespace NukedOpl;
 
 public sealed class Opl3Slot(Opl3Chip chip)
 {
+    public delegate int ModFunc(Opl3Channel c);
+    public delegate int TremFunc(Opl3Slot s);
+    
     public Opl3Channel channel { get; internal set; } = null!;
     public Opl3Chip chip { get; } = chip;
     public int out_ { get; set; }
     public int fbmod { get; set; }
-    public Func<int>? mod { get; set; }
+    public ModFunc? mod { get; set; }
     public int prout { get; set; }
     public int eg_rout { get; set; }
     public int eg_out { get; set; }
@@ -55,7 +58,7 @@ public sealed class Opl3Slot(Opl3Chip chip)
     public int eg_gen { get; set; }
     public int eg_rate { get; set; }
     public int eg_ksl { get; set; }
-    public Func<int>? trem { get; set; }
+    public TremFunc? trem { get; set; }
     public bool reg_vib { get; set; }
     public bool reg_type { get; set; }
     public bool reg_ksr { get; set; }

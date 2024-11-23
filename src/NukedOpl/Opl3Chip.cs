@@ -72,7 +72,10 @@ public sealed class Opl3Chip
     public int tremolopos { get; set; }
     public int tremoloshift { get; set; }
     public int noise { get; set; }
-    public int[] mixbuff { get; } = new int[4];
+    public int mixbuff0 { get; set; }
+    public int mixbuff1 { get; set; }
+    public int mixbuff2 { get; set; }
+    public int mixbuff3 { get; set; }
     public bool rm_hh_bit2 { get; set; }
     public bool rm_hh_bit3 { get; set; }
     public bool rm_hh_bit7 { get; set; }
@@ -111,7 +114,10 @@ public sealed class Opl3Chip
         tremolopos = default;
         tremoloshift = default;
         noise = default;
-        mixbuff.AsSpan().Clear();
+        mixbuff0 = default;
+        mixbuff1 = default;
+        mixbuff2 = default;
+        mixbuff3 = default;
         rm_hh_bit2 = default;
         rm_hh_bit3 = default;
         rm_hh_bit7 = default;
